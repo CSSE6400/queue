@@ -17,13 +17,27 @@ csse6400_config = Config(
 @click.option('--client-name', required=True, help="Name of this client")
 @click.option('--send/--receive', default=True, help="Whether this application should be sending")
 def cmd(name: str, client_name: str, send: bool):
-    print(f'Hello, [bold magenta]World[/bold magenta]')
+    print('''
+    [bold purple]
+      __________
+     |   \XX/   |
+     | T. \/ .T |      [bold white]University of Queensland[/bold white]
+     | XX:  :XX |          [bold white]Faculty of EAIT[/bold white]
+     T L' /\ 'J T
+      \  /XX\  /         [bold white]CSSE6400 Queue Prac[/bold white]
+    @\_ '____' _/@       [bold white]csse6400.uqcloud.net[/bold white]
+    \_X\_ __ _/X_/       
+     \=/\----/\=/  
+    [/bold purple]
+    
+    ''')
 
     sqs = boto3.resource('sqs', config=csse6400_config)
     queue = sqs.get_queue_by_name(QueueName=name)
-    print(f'Connected to the following Queue')
+    print(f'Connected to {name}')
 
     if send:
+        print('Sending Messages:')
         for id in track(range(100)):
             if name.endswith('.fifo'):
                 queue.send_message(MessageBody=f'Message {id}', MessageAttributes={'client': {'StringValue': client_name, 'DataType': 'String'}}, MessageGroupId="default")
