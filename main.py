@@ -33,22 +33,31 @@ def cmd(name: str, client_name: str, send: bool):
     ''')
 
     sqs = boto3.resource('sqs', config=csse6400_config)
-    queue = sqs.get_queue_by_name(QueueName=name)
+    try:
+        queue = sqs.get_queue_by_name(QueueName=name)
+    except:
+        print(f'Unable to find a Queue by this name {name}')
+        return
+
     print(f'Connected to {name}')
 
     if send:
         print('Sending Messages:')
         for id in track(range(100)):
             if name.endswith('.fifo'):
-                queue.send_message(MessageBody=f'Message {id}', MessageAttributes={'client': {'StringValue': client_name, 'DataType': 'String'}}, MessageGroupId="default")
+                queue.send_message(MessageBody=f'Message {id}',
+                                   MessageAttributes={'client': {'StringValue': client_name, 'DataType': 'String'}},
+                                   MessageGroupId="default")
             else:
-                queue.send_message(MessageBody=f'Message {id}', MessageAttributes={'client': {'StringValue': client_name, 'DataType': 'String'}})
+                queue.send_message(MessageBody=f'Message {id}',
+                                   MessageAttributes={'client': {'StringValue': client_name, 'DataType': 'String'}})
     else:
         console = Console()
 
         with console.status("[bold green]Waiting for messages...") as status:
             while True:
-                for message in queue.receive_messages(MaxNumberOfMessages=10, WaitTimeSeconds=1, MessageAttributeNames=['client']):
+                for message in queue.receive_messages(MaxNumberOfMessages=10, WaitTimeSeconds=1,
+                                                      MessageAttributeNames=['client']):
                     client = message.message_attributes.get('client').get('StringValue')
                     console.log(f'{client}: {message.body}')
                     message.delete()
