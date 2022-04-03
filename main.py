@@ -16,7 +16,8 @@ csse6400_config = Config(
 @click.option('--name', required=True, help="Name of the Queue to connect to")
 @click.option('--client-name', required=True, help="Name of this client")
 @click.option('--send/--receive', default=True, help="Whether this application should be sending")
-def cmd(name: str, client_name: str, send: bool):
+@click.option('--prepend', default='', help="Prepends to the front of a message")
+def cmd(name: str, client_name: str, send: bool, prepend: str):
     print('''
     [bold purple]
       __________
@@ -45,11 +46,11 @@ def cmd(name: str, client_name: str, send: bool):
         print('Sending Messages:')
         for id in track(range(100)):
             if name.endswith('.fifo'):
-                queue.send_message(MessageBody=f'Message {id}',
+                queue.send_message(MessageBody=f'{prepend}Message {id}',
                                    MessageAttributes={'client': {'StringValue': client_name, 'DataType': 'String'}},
                                    MessageGroupId="default")
             else:
-                queue.send_message(MessageBody=f'Message {id}',
+                queue.send_message(MessageBody=f'{prepend}Message {id}',
                                    MessageAttributes={'client': {'StringValue': client_name, 'DataType': 'String'}})
     else:
         console = Console()
